@@ -20,29 +20,20 @@
 #
 
 module BinLib
-  module_function
-  def to_int8(val)
-    [val].pack("c").unpack("c")[0]
-  end
+  list = {
+    :to_int8 => "c",
+    :to_uint8 => "C",
+    :to_int16 => "s",
+    :to_uint16 => "S",
+    :to_int32 => "l",
+    :to_uint32 => "L",
+  }
   
-  def to_uint8(val)
-    [val].pack("C").unpack("C")[0]
-  end
-  
-  def to_int16(val)
-    [val].pack("s").unpack("s")[0]
-  end
-  
-  def to_uint16(val)
-    [val].pack("S").unpack("S")[0]
-  end
-  
-  def to_int32(val)
-    [val].pack("l").unpack("l")[0]
-  end
-  
-  def to_uint32(val)
-    [val].pack("L").unpack("L")[0]
+  list.each do |name, type|
+    define_method(name) do |val|
+      [val].pack(type).unpack(type)[0]
+    end
+    module_function name
   end
   
   def cat8(val)
