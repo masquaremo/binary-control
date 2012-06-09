@@ -12,11 +12,11 @@
 #   p BinLib.to_uint8(0xff80)  #=> 128
 #
 #   cat(join) and split
-#   p BinLib.cat8([0xaa, 0x55])         #=> 0xaa55
-#   p BinLib.cat8([0xaa, 0xff, 0x55])   #=> 0xaaff55
-#   p BinLib.cat8([0xaa00, 0x55])       #=> 0xaa0055
-#   p BinLib.split8(0xaa55)             #=> [0xaa, 0x55]
-#   p BinLib.split8(0xaa0055)           #=> [0xaa, 0x0, 0x55]
+#   p BinLib.cat([0xaa, 0x55])         #=> 0xaa55
+#   p BinLib.cat([0xaa, 0xff, 0x55])   #=> 0xaaff55
+#   p BinLib.cat([0xaa00, 0x55])       #=> 0xaa0055
+#   p BinLib.split(0xaa55)             #=> [0xaa, 0x55]
+#   p BinLib.split(0xaa0055)           #=> [0xaa, 0x0, 0x55]
 #
 
 module BinLib
@@ -29,22 +29,29 @@ module BinLib
     :to_uint32 => "L",
   }
   
-  list.each do |name, type|
-    define_method(name) do |val|
+  list.each do |fname, type|
+    define_method(fname) do |val|
       [val].pack(type).unpack(type)[0]
     end
-    module_function name
+    module_function fname
   end
   
-  def cat8(val)
+  module_function
+  
+  def cat(val)
     ret = 0;
-    val.each{ |e| ret = (ret << 8) | e }
+    val.each do |e| 
+      octet(e).times do
+        ret <<= 8
+      end
+      ret |= e
+    end
     ret
   end
   
-  alias join8 cat8
+  alias join cat
   
-  def split8(val)
+  def split(val)
     ret = []
     while val != 0
       ret.unshift(val & 0xff)
@@ -52,6 +59,16 @@ module BinLib
     end
     ret
   end
+  
+  def octet(val)
+    count = 0
+    until val == 0
+      count += 1
+      val >>= 8
+    end
+    count
+  end
+
 end
 
 # sample
@@ -70,9 +87,9 @@ if $0 == __FILE__
   p to_int8(0xff80)
   p to_uint8(0xff80)
 
-  puts "%X" % cat8([0xaa, 0x55])
-  puts "%X" % cat8([0xaa, 0xff, 0x55])
-  puts "%X" % cat8([0xaa00, 0x55])
-  puts "[%X, %X]" % split8(0xaa55)
-  puts "[%X, %X, %X]" % split8(0xaa0055)
+  puts "%X" % cat([0xaa, 0x55])
+  puts "%X" % cat([0xaa, 0xff, 0x55])
+  puts "%X" % cat([0xaa00, 0x55])
+  puts "[%X, %X]" % split(0xaa55)
+  puts "[%X, %X, %X]" % split(0xaa0055)
 end
